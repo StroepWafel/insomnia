@@ -5,7 +5,6 @@ import { Button as ComboButton, ComboBox, Input, ListBox, ListBoxItem, Popover }
 import { getAppWebsiteBaseURL } from '../../../common/constants';
 import { isGitHubAppUserToken } from '../github-app-config-link';
 import { Icon } from '../icon';
-import { showError } from '../modals';
 import { Button } from '../themed-button';
 
 type GitHubRepository = Awaited<ReturnType<typeof window.main.git.getGitHubRepositories>>['repos'][number];
@@ -15,16 +14,14 @@ export const GitHubRepositorySelect = ({ uri, token }: { uri?: string; token: st
   const [repositories, setRepositories] = useState<GitHubRepository[]>([]);
   const [selectedRepository, setSelectedRepository] = useState<GitHubRepository | null>(null);
   const [cannotFindRepository, setCannotFindRepository] = useState(false);
+  const [repositoryFetchError, setRepositoryFetchError] = useState<string | null>(null);
 
   const getRepositories = async () => {
     setLoading(true);
     setRepositories([]);
     const { repos, errors } = await window.main.git.getGitHubRepositories({});
     if (errors.length) {
-      showError({
-        title: 'Error fetching repositories',
-        message: errors.join('\n'),
-      });
+      setRepositoryFetchError(`Error fetching repositories: ${errors.join('\n')}`);
     }
     setRepositories(repos);
     setLoading(false);
@@ -143,6 +140,11 @@ export const GitHubRepositorySelect = ({ uri, token }: { uri?: string; token: st
       {selectedRepository !== null && !selectedRepository.permissions.push && (
         <div className="mt-2 text-sm text-orange-500">
           <Icon icon="warning" /> You do not have write access to this repository
+        </div>
+      )}
+      {repositoryFetchError && (
+        <div className="mt-2 text-sm text-red-500">
+          <Icon icon="warning" /> {repositoryFetchError}
         </div>
       )}
     </div>
