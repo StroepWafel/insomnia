@@ -72,6 +72,8 @@ export type HandleChannels =
   | 'grpc.loadMethodsFromReflection'
   | 'installPlugin'
   | 'lintSpec'
+  | 'llm.getLLMs'
+  | 'llm.createMockServerFromOpenAPISpec'
   | 'onDefaultBrowserOAuthRedirect'
   | 'open-channel-to-hidden-browser-window'
   | 'openPath'

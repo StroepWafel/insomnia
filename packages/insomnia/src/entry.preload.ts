@@ -1,5 +1,7 @@
 import { contextBridge, ipcRenderer, webUtils as webUtilities } from 'electron';
 
+import type { LLMBridgeAPI } from '~/main/llm-service';
+
 import type { GitServiceAPI } from './main/git-service';
 import type { gRPCBridgeAPI } from './main/ipc/grpc';
 import type { secretStorageBridgeAPI } from './main/ipc/secret-storage';
@@ -108,6 +110,12 @@ const git: GitServiceAPI = {
   signOutOfGitLab: () => ipcRenderer.invoke('git.signOutOfGitLab'),
 };
 
+const llm: LLMBridgeAPI = {
+  getLLMs: () => ipcRenderer.invoke('llm.getLLMs'),
+  createMockServerFromOpenAPISpec: (...options: Parameters<LLMBridgeAPI['createMockServerFromOpenAPISpec']>) =>
+    ipcRenderer.invoke('llm.createMockServerFromOpenAPISpec', ...options),
+};
+
 const main: Window['main'] = {
   startExecution: options => ipcRenderer.send('startExecution', options),
   addExecutionStep: options => ipcRenderer.send('addExecutionStep', options),
@@ -142,6 +150,7 @@ const main: Window['main'] = {
   webSocket,
   socketIO,
   git,
+  llm,
   grpc,
   curl,
   secretStorage,

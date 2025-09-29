@@ -1,4 +1,5 @@
 import { Button, Menu, MenuItem, MenuTrigger, Popover } from 'react-aria-components';
+import { useNavigate } from 'react-router';
 
 import { getAppWebsiteBaseURL } from '~/common/constants';
 import type { CurrentPlan, PersonalPlanType, UserProfileResponse } from '~/models/organization';
@@ -70,6 +71,7 @@ interface UserButtonProps {
 }
 export const HeaderUserButton = ({ user, currentPlan, isMinimal = false }: UserButtonProps) => {
   const logoutFetcher = useLogoutFetcher();
+  const navigate = useNavigate();
 
   return (
     <MenuTrigger>
@@ -102,6 +104,10 @@ export const HeaderUserButton = ({ user, currentPlan, isMinimal = false }: UserB
             if (action === 'manage-organizations') {
               window.main.openInBrowser(`${getAppWebsiteBaseURL()}/app/dashboard/organizations`);
             }
+
+            if (action === 'sandbox') {
+              navigate('/sandbox');
+            }
           }}
         >
           <MenuItem
@@ -127,6 +133,14 @@ export const HeaderUserButton = ({ user, currentPlan, isMinimal = false }: UserB
           >
             <Icon icon="sign-out" />
             <span>Log out</span>
+          </MenuItem>
+          <MenuItem
+            id="sandbox"
+            className="text-md flex h-[--line-height-xs] w-full items-center gap-2 whitespace-nowrap bg-transparent px-[--padding-md] text-[--color-font] transition-colors hover:bg-[--hl-sm] focus:bg-[--hl-xs] focus:outline-none disabled:cursor-not-allowed aria-selected:font-bold"
+            aria-label="sandbox"
+          >
+            <Icon icon="code" />
+            <span>Sandbox</span>
           </MenuItem>
         </Menu>
       </Popover>

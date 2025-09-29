@@ -2,8 +2,7 @@ import fs from 'node:fs/promises';
 import inspector from 'node:inspector';
 import path from 'node:path';
 
-import electron, { app, session } from 'electron';
-import { BrowserWindow } from 'electron';
+import electron, { app, BrowserWindow, session } from 'electron';
 import contextMenu from 'electron-context-menu';
 import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 
@@ -18,6 +17,7 @@ import { ipcMainOn, ipcMainOnce, registerElectronHandlers } from './main/ipc/ele
 import { registergRPCHandlers } from './main/ipc/grpc';
 import { registerMainHandlers } from './main/ipc/main';
 import { registerSecretStorageHandlers } from './main/ipc/secret-storage';
+import { registerLLMHandlers } from './main/llm-service';
 import log, { initializeLogging } from './main/log';
 import { registerCurlHandlers } from './main/network/curl';
 import { registerSocketIOHandlers } from './main/network/socket-io';
@@ -71,6 +71,7 @@ app.on('ready', async () => {
   registerMainHandlers();
   registergRPCHandlers();
   registerGitServiceAPI();
+  registerLLMHandlers();
   registerWebSocketHandlers();
   registerSocketIOHandlers();
   registerCurlHandlers();
