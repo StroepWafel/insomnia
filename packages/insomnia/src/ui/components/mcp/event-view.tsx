@@ -1,12 +1,13 @@
 import fs from 'node:fs';
 
-import { CallToolResultSchema, ElicitRequestSchema } from '@modelcontextprotocol/sdk/types.js';
-import { type RJSFSchema, type UiSchema } from '@rjsf/utils';
+import {
+  CallToolResultSchema,
+  CreateMessageRequestSchema,
+  ElicitRequestSchema,
+} from '@modelcontextprotocol/sdk/types.js';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Button, Toolbar } from 'react-aria-components';
+import { Button } from 'react-aria-components';
 import { useParams } from 'react-router';
-
-import { InsomniaRjsfForm, type InsomniaRjsfFormHandle } from '~/ui/components/rjsf';
 
 import {
   getPreviewModeName,
@@ -22,21 +23,15 @@ import { CodeEditor, type CodeEditorHandle } from '../../components/.client/code
 import { showError } from '../../components/modals';
 import { useRequestMetaPatcher } from '../../hooks/use-request';
 import { Dropdown, DropdownItem, DropdownSection, ItemContent } from '../base/dropdown';
+import { ElicitationForm } from './elicitation-form';
+import { SamplingForm } from './sampling-form';
 
 interface Props {
   event: McpEvent;
 }
 
-const uiSchema: UiSchema = {
-  'ui:submitButtonOptions': {
-    norender: true,
-  },
-};
-
 export const MessageEventView = ({ event }: Props) => {
-  const [formData, setFormData] = useState({});
   const [isServerRequestResponded, setIsServerRequestResponded] = useState(true);
-  const rjsfFormRef = useRef<InsomniaRjsfFormHandle>(null);
   const editorRef = useRef<CodeEditorHandle>(null);
   const { requestId } = useParams() as { requestId: string };
 
@@ -45,6 +40,8 @@ export const MessageEventView = ({ event }: Props) => {
   const eventData = isErrorEvent ? event.error : 'data' in event ? event.data : '';
   const raw = JSON.stringify(eventData);
   const isElicitationRequest = ElicitRequestSchema.safeParse(eventData).success;
+  const samplingRequestParseResult = CreateMessageRequestSchema.safeParse(eventData);
+  const isSamplingRequest = samplingRequestParseResult.success;
   const [viewMode, setViewMode] = useState<'raw' | 'form'>('raw');
 
   const handleDownloadResponseBody = useCallback(async () => {
@@ -85,10 +82,6 @@ export const MessageEventView = ({ event }: Props) => {
       return requestSchema;
     }
     return {};
-  };
-
-  const handleRjsfFormChange = (formData: any) => {
-    setFormData(formData);
   };
 
   let pretty = raw;
@@ -140,10 +133,10 @@ export const MessageEventView = ({ event }: Props) => {
         setViewMode('form');
       }
     };
-    if (isElicitationRequest) {
+    if (isElicitationRequest || isSamplingRequest) {
       checkRequestCompleted();
     }
-  }, [requestId, eventData?.id, isElicitationRequest]);
+  }, [requestId, eventData?.id, isElicitationRequest, isSamplingRequest]);
 
   return (
     <div className="flex h-full flex-col">
@@ -182,18 +175,18 @@ export const MessageEventView = ({ event }: Props) => {
             </DropdownItem>
           </DropdownSection>
         </Dropdown>
-        {isElicitationRequest && !isServerRequestResponded && (
+        {!isServerRequestResponded && (
           <Button
             className={`mx-2 mt-2 px-2 text-[--color-font] outline-none transition-colors duration-300 hover:bg-[--hl-sm] hover:text-[--color-font] focus:bg-[--hl-sm] ${
               viewMode === 'form' ? 'bg-[--hl-xs] text-[--color-font]' : ''
             }`}
             onPress={() => setViewMode('form')}
           >
-            Elicitation Form
+            {isElicitationRequest ? 'Elicitation Form' : 'Sampling Form'}
           </Button>
         )}
       </div>
-      {viewMode === 'raw' ? (
+      {viewMode === 'raw' && (
         <div className="h-full flex-grow p-4">
           <CodeEditor
             id="mcp-data-preview"
@@ -205,61 +198,17 @@ export const MessageEventView = ({ event }: Props) => {
             readOnly
           />
         </div>
-      ) : (
-        <div className="flex flex-grow flex-col overflow-hidden">
-          <div className="h-[calc(100%-var(--line-height-sm))] overflow-auto bg-inherit px-5 py-1">
-            <InsomniaRjsfForm
-              formData={formData}
-              onChange={handleRjsfFormChange}
-              schema={getElicitationFormSchema() as RJSFSchema}
-              uiSchema={uiSchema}
-              ref={rjsfFormRef}
-              showErrorList={false}
-              focusOnFirstError
-            />
-          </div>
-          <Toolbar className="content-box sticky bottom-0 z-10 flex h-[var(--line-height-sm)] flex-shrink-0 gap-3 border-b border-[var(--hl-md)] bg-[var(--color-bg)] px-5 py-2 text-[var(--font-size-sm)]">
-            <Button
-              onPress={() => {
-                if (rjsfFormRef.current?.validate()) {
-                  window.main.mcp.client.responseElicitationRequest({
-                    requestId,
-                    serverRequestId: eventData?.id,
-                    type: 'submit',
-                    content: formData,
-                  });
-                }
-              }}
-              className="rounded-sm bg-[--color-surprise] px-[--padding-md] text-center text-[--color-font-surprise] hover:brightness-75"
-            >
-              Submit
-            </Button>
-            <Button
-              onPress={() =>
-                window.main.mcp.client.responseElicitationRequest({
-                  requestId,
-                  serverRequestId: eventData?.id,
-                  type: 'decline',
-                })
-              }
-              className="rounded-[var(--radius-md)] border border-solid border-[var(--hl-lg)] bg-[var(--color-bg)] px-[var(--padding-md)] text-center"
-            >
-              Decline
-            </Button>
-            <Button
-              onPress={() =>
-                window.main.mcp.client.responseElicitationRequest({
-                  requestId,
-                  serverRequestId: eventData?.id,
-                  type: 'cancel',
-                })
-              }
-              className="rounded-[var(--radius-md)] border border-solid border-[var(--hl-lg)] bg-[var(--color-bg)] px-[var(--padding-md)] text-center"
-            >
-              Cancel
-            </Button>
-          </Toolbar>
-        </div>
+      )}
+      {viewMode === 'form' && isElicitationRequest && (
+        <ElicitationForm schema={getElicitationFormSchema()} requestId={requestId} serverRequestId={eventData?.id} />
+      )}
+      {/* {viewMode === 'form' && isSamplingRequest && ( */}
+      {isSamplingRequest && (
+        <SamplingForm
+          requestId={requestId}
+          serverRequestId={eventData?.id}
+          samplingData={samplingRequestParseResult.data}
+        />
       )}
     </div>
   );

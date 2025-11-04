@@ -6,6 +6,7 @@ import type { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdi
 import type { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import {
   CancelledNotificationSchema,
+  CreateMessageRequestSchema,
   ElicitRequestSchema,
   EmptyResultSchema,
   JSONRPCErrorSchema,
@@ -31,6 +32,7 @@ import {
   listTools,
   readResource,
   responseElicitationRequest,
+  responseSamplingRequest,
   sendRootListChangeNotification,
   subscribeResource,
   unsubscribeResource,
@@ -46,6 +48,7 @@ import {
   hasRequestResponded,
   mcpConnections,
   mcpServerElicitationRequests,
+  mcpServerSamplingRequests,
   notifyMcpClientStateChange,
   parseAndLogMcpRequest,
   requestIdToResponseIdMap,
@@ -333,6 +336,8 @@ const openMcpClientConnection = async (options: OpenMcpClientConnectionOptions) 
 
         // declare the client to support elicitation
         elicitation: {},
+        // declare the client to support sampling
+        sampling: {},
       },
     },
   );
@@ -379,10 +384,23 @@ const openMcpClientConnection = async (options: OpenMcpClientConnectionOptions) 
     });
   });
 
+  // add sampling request handler to indicate the client supports it
+  mcpClient.setRequestHandler(CreateMessageRequestSchema, async (_request, extra) => {
+    return new Promise((resolve, reject) => {
+      const serverRequestId = extra.requestId;
+      const pendingServerRequestResolvers = mcpServerSamplingRequests.get(requestId) || new Map();
+      if (!mcpServerSamplingRequests.has(requestId)) {
+        mcpServerSamplingRequests.set(requestId, pendingServerRequestResolvers);
+      }
+      pendingServerRequestResolvers.set(serverRequestId, { resolve, reject });
+    });
+  });
+
   mcpClient.setNotificationHandler(CancelledNotificationSchema, notification => {
     const serverRequestId = notification.params.requestId;
     // handle server request cancellation
-    const pendingServerRequestResolvers = mcpServerElicitationRequests.get(requestId);
+    const pendingServerRequestResolvers =
+      mcpServerElicitationRequests.get(requestId) || mcpServerSamplingRequests.get(requestId);
     if (pendingServerRequestResolvers && pendingServerRequestResolvers.has(serverRequestId)) {
       console.log('Received server request cancellation notification', serverRequestId);
       pendingServerRequestResolvers.delete(serverRequestId);
@@ -462,6 +480,7 @@ export interface McpBridgeAPI {
   };
   client: {
     responseElicitationRequest: typeof responseElicitationRequest;
+    responseSamplingRequest: typeof responseSamplingRequest;
     hasRequestResponded: typeof hasRequestResponded;
   };
   readyState: {
@@ -511,6 +530,9 @@ export const registerMcpHandlers = () => {
   );
   ipcMainOn('mcp.client.responseElicitationRequest', (_, options: Parameters<typeof responseElicitationRequest>[0]) =>
     responseElicitationRequest(options),
+  );
+  ipcMainOn('mcp.client.responseSamplingRequest', (_, options: Parameters<typeof responseSamplingRequest>[0]) =>
+    responseSamplingRequest(options),
   );
   ipcMainHandle('mcp.client.hasRequestResponded', (_, options: Parameters<typeof hasRequestResponded>[0]) =>
     hasRequestResponded(options),

@@ -80,6 +80,21 @@ const CustomSelectWidget = (props: WidgetProps) => {
   );
 };
 
+// Textarea widget for string values
+const CustomTextAreaWidget = (props: WidgetProps) => {
+  const { value, onChange, disabled, readonly } = props;
+
+  return (
+    <textarea
+      disabled={disabled}
+      className={cn(`${baseInputClasses}`)}
+      readOnly={readonly}
+      value={value || ''}
+      onChange={e => onChange(e.target.value)}
+    />
+  );
+};
+
 // ===== TEMPLATES =====
 
 // Base Input Template - used by most input widgets
@@ -335,6 +350,7 @@ const ArrayFieldTemplate = (props: ArrayFieldTemplateProps) => {
 const themeWidgets: RegistryWidgetsType = {
   CheckboxWidget: CustomCheckboxWidget,
   SelectWidget: CustomSelectWidget,
+  TextareaWidget: CustomTextAreaWidget,
 };
 
 const themeTemplates = {

@@ -1,6 +1,8 @@
 import fs from 'node:fs';
 
 import {
+  type CreateMessageResult,
+  CreateMessageResultSchema,
   type ElicitResult,
   ElicitResultSchema,
   JSONRPCErrorSchema,
@@ -10,7 +12,12 @@ import { BrowserWindow } from 'electron';
 import { v4 as uuidV4 } from 'uuid';
 
 import { REALTIME_EVENTS_CHANNELS } from '~/common/constants';
-import { METHOD_ELICITATION_CREATE_MESSAGE, METHOD_LIST_ROOTS, METHOD_UNKNOWN } from '~/common/mcp-utils';
+import {
+  METHOD_ELICITATION_CREATE_MESSAGE,
+  METHOD_LIST_ROOTS,
+  METHOD_SAMPLING_CREATE_MESSAGE,
+  METHOD_UNKNOWN,
+} from '~/common/mcp-utils';
 import type {
   CommonMcpOptions,
   McpClient,
@@ -31,6 +38,11 @@ export const requestIdToResponseIdMap = new Map<string, string>();
 export const mcpServerElicitationRequests = new Map<
   string,
   Map<string | number, { resolve: (value: ElicitResult) => void; reject: (reason?: any) => void }>
+>();
+// map to save server sampling requests
+export const mcpServerSamplingRequests = new Map<
+  string,
+  Map<string | number, { resolve: (value: CreateMessageResult) => void; reject: (reason?: any) => void }>
 >();
 
 const mcpEventIdGenerator = () => `mcp-${uuidV4()}`;
@@ -98,6 +110,8 @@ export const parseAndLogMcpRequest = (requestId: string, message: any) => {
         requestMethod = METHOD_LIST_ROOTS;
       } else if (ElicitResultSchema.safeParse(message?.result).success) {
         requestMethod = METHOD_ELICITATION_CREATE_MESSAGE;
+      } else if (CreateMessageResultSchema.safeParse(message?.result).success) {
+        requestMethod = METHOD_SAMPLING_CREATE_MESSAGE;
       } else if (JSONRPCErrorSchema.safeParse(message).success) {
         requestMethod = 'JSON-RPC Error';
       } else {
@@ -172,7 +186,8 @@ export const hasRequestResponded = async ({
   serverRequestId,
 }: CommonMcpOptions & { serverRequestId: string }) => {
   const hasResponded = true;
-  const pendingServerRequestResolvers = mcpServerElicitationRequests.get(requestId);
+  const pendingServerRequestResolvers =
+    mcpServerElicitationRequests.get(requestId) || mcpServerSamplingRequests.get(requestId);
   if (pendingServerRequestResolvers) {
     return !pendingServerRequestResolvers.has(serverRequestId);
   }
