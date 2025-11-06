@@ -55,20 +55,16 @@ export interface OrganizationLoaderData {
 
 export async function clientLoader(_args: Route.ClientLoaderArgs) {
   const { id, accountId } = await userSession.getOrCreate();
-  if (id) {
-    const organizations = JSON.parse(localStorage.getItem(`${accountId}:organizations`) || '[]') as Organization[];
-    const user = JSON.parse(localStorage.getItem(`${accountId}:user`) || '{}') as UserProfileResponse;
-    const currentPlan = JSON.parse(localStorage.getItem(`${accountId}:currentPlan`) || '{}') as CurrentPlan;
-    return {
-      organizations: sortOrganizations(accountId, organizations),
-      user,
-      currentPlan,
-    };
-  }
+  // Always return data - no account required
+  // Use a default accountId if none exists
+  const defaultAccountId = accountId || 'default';
+  const organizations = JSON.parse(localStorage.getItem(`${defaultAccountId}:organizations`) || '[]') as Organization[];
+  const user = JSON.parse(localStorage.getItem(`${defaultAccountId}:user`) || '{}') as UserProfileResponse;
+  const currentPlan = JSON.parse(localStorage.getItem(`${defaultAccountId}:currentPlan`) || JSON.stringify({ type: 'enterprise', isActive: true })) as CurrentPlan;
   return {
-    organizations: [],
-    user: undefined,
-    currentPlan: undefined,
+    organizations: sortOrganizations(defaultAccountId, organizations),
+    user,
+    currentPlan,
   };
 }
 

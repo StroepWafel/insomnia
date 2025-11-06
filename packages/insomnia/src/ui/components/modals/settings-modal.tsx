@@ -45,7 +45,7 @@ export const SettingsModal = forwardRef<SettingsModalHandle, ModalProps>((props,
     const checkAiPlugin = async () => {
       const plugins = await getBundlePlugins();
       const aiPlugin = plugins.find(p => p.name === AI_PLUGIN_NAME);
-      setShouldShowAiSettingsTab(!!aiPlugin && !!userSession.id);
+      setShouldShowAiSettingsTab(!!aiPlugin); // Always show if plugin exists - no account required
     };
     checkAiPlugin();
   }, [userSession.id]);

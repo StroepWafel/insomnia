@@ -17,9 +17,10 @@ export const WorkspaceSyncDropdown: FC = () => {
 
   const { features } = useOrganizationPermissions();
 
-  if (!userSession.id) {
-    return null;
-  }
+  // Always allow - no account required
+  // if (!userSession.id) {
+  //   return null;
+  // }
 
   const isLocalProject =
     !isRemoteProject(activeProject) && !activeWorkspaceMeta?.gitRepositoryId && !isGitProject(activeProject);

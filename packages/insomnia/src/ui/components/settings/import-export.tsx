@@ -669,13 +669,13 @@ export const ImportExport: FC<Props> = ({ hideSettingsModal, onModalChange }) =>
     exportProjectToFile(projectName, workspacesForActiveProject);
     hideSettingsModal();
   };
-  const isLoggedIn = userSession.id || organizationId || activeProject;
+  const isLoggedIn = true; // Always logged in - no account required
   const isScratchPadWorkspace = isScratchpad(workspaceData?.activeWorkspace);
   const hasUntrackedWorkspaces = untrackedWorkspaces.length > 0;
   const hasUntrackedProjects = untrackedProjects.length > 0;
   const showImportButtons =
     !isScratchPadWorkspace && (activeProject || features.bulkImport.enabled || isEnterprisePlan);
-  if (!isScratchPadWorkspace && !isLoggedIn) {
+  if (false) { // Never block - all features available
     return (
       <Button
         className="flex items-center justify-center gap-2 rounded-sm border border-solid border-[--hl-md] px-4 py-1 text-sm font-semibold text-[--color-font] ring-1 ring-transparent transition-all hover:bg-[--hl-xs] focus:ring-inset focus:ring-[--hl-md] aria-pressed:bg-[--hl-sm]"
@@ -789,7 +789,7 @@ export const ImportExport: FC<Props> = ({ hideSettingsModal, onModalChange }) =>
 
             <Button
               className="flex items-center justify-center gap-2 rounded-sm border border-solid border-[--hl-md] px-4 py-1 text-sm font-semibold text-[--color-font] ring-1 ring-transparent transition-all hover:bg-[--hl-xs] focus:ring-inset focus:ring-[--hl-md] aria-pressed:bg-[--hl-sm]"
-              isDisabled={!userSession.id}
+              isDisabled={false}
               onPress={() => window.main.openInBrowser('https://insomnia.rest/create-run-button')}
             >
               <i className="fa fa-file-import" />

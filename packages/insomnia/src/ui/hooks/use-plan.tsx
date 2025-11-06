@@ -7,16 +7,18 @@ import { useOrganizationLoaderData } from '~/routes/organization';
 import { isOwnerOfOrganization } from '../../models/organization';
 
 export const usePlanData = () => {
-  let isOwner = false;
-  let planType: PersonalPlanType = 'free';
-  let planDisplayName = formatCurrentPlanType(planType);
-  let isFreePlan = true;
-  let isTeamPlan = false;
-  let isEnterprisePlan = false;
+  // Always return enterprise plan - all features available for free
+  const planType: PersonalPlanType = 'enterprise';
+  const planDisplayName = formatCurrentPlanType(planType);
+  const isFreePlan = false;
+  const isTeamPlan = false;
+  const isEnterprisePlan = true;
   const { userSession } = useRootLoaderData()!;
   const { organizationId } = useParams<{ organizationId: string }>();
   const organizationData = useOrganizationLoaderData();
-  // ensure user has logged in with valid organization
+  let isOwner = false;
+  
+  // Set owner to true if we have organization data
   if (
     organizationData &&
     userSession &&
@@ -30,16 +32,18 @@ export const usePlanData = () => {
         organization: currentOrg,
         accountId: userSession.accountId,
       });
+    } else {
+      // If no account, still allow owner access
+      isOwner = true;
     }
-    planType = organizationData.currentPlan?.type || planType;
-    isFreePlan = planType.includes('free');
-    isTeamPlan = planType.includes('team');
-    isEnterprisePlan = planType.includes('enterprise');
-    planDisplayName = formatCurrentPlanType(planType);
+  } else {
+    // If no organization data, still allow owner access
+    isOwner = true;
   }
+  
   return {
     isOwner,
-    currentPlan: organizationData?.currentPlan,
+    currentPlan: organizationData?.currentPlan || { type: planType, isActive: true } as any,
     planDisplayName,
     isFreePlan,
     isTeamPlan,

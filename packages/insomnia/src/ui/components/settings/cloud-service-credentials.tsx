@@ -120,9 +120,10 @@ export const CloudServiceCredentialList = () => {
     }
   };
 
-  if (!isEnterprisePlan) {
-    return <UpgradeNotice isOwner={isOwner} featureName="Cloud Credentials feature" newPlan="enterprise" />;
-  }
+  // Always allow - all features available for free
+  // if (!isEnterprisePlan) {
+  //   return <UpgradeNotice isOwner={isOwner} featureName="Cloud Credentials feature" newPlan="enterprise" />;
+  // }
   if (!isVaultPluginInstalled) {
     return (
       <div className="notice pad info flex flex-col items-center justify-center gap-2">

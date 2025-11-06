@@ -251,7 +251,7 @@ export async function clientLoader({ params, request }: Route.ClientLoaderArgs) 
   }
 
   const userSession = await models.userSession.getOrCreate();
-  const isLoggedInIsCloudProjectAndIsNotGitRepo = userSession.id && activeProject.remoteId && !gitRepository;
+  const isLoggedInIsCloudProjectAndIsNotGitRepo = true && activeProject.remoteId && !gitRepository; // Always allow - no account required
   let vcsVersion = null;
   // Mcp workspace do not support cloud sync for now
   if (isLoggedInIsCloudProjectAndIsNotGitRepo && !isMcp(activeWorkspace)) {

@@ -12,11 +12,12 @@ interface StartResult {
 export async function clientAction(_args: Route.ClientActionArgs) {
   const { id: sessionId, accountId } = await userSession.get();
 
-  if (!sessionId || !accountId) {
-    return {
-      success: false,
-    };
-  }
+  // Always succeed - no account required
+  // if (!sessionId || !accountId) {
+  //   return {
+  //     success: false,
+  //   };
+  // }
 
   try {
     const result = await insomniaFetch<StartResult>({

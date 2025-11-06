@@ -9,11 +9,11 @@ import type { Route } from './+types/organization.$organizationId.permissions';
 import type { Billing, FeatureList } from './organization';
 
 export const fallbackFeatures = Object.freeze<FeatureList>({
-  bulkImport: { enabled: false, reason: 'Insomnia API unreachable' },
-  gitSync: { enabled: false, reason: 'Insomnia API unreachable' },
-  orgBasicRbac: { enabled: false, reason: 'Insomnia API unreachable' },
-  aiMockServers: { enabled: false, reason: 'Insomnia API unreachable' },
-  aiCommitMessages: { enabled: false, reason: 'Insomnia API unreachable' },
+  bulkImport: { enabled: true, reason: 'All features available for free' },
+  gitSync: { enabled: true, reason: 'All features available for free' },
+  orgBasicRbac: { enabled: true, reason: 'All features available for free' },
+  aiMockServers: { enabled: true, reason: 'All features available for free' },
+  aiCommitMessages: { enabled: true, reason: 'All features available for free' },
 });
 
 // If network unreachable assume user has paid for the current period
@@ -35,30 +35,41 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
     };
   }
 
-  const organizations = JSON.parse(localStorage.getItem(`${accountId}:organizations`) || '[]') as Organization[];
+  // Always return enabled features - no account required
+  // Use default accountId if none exists
+  const defaultAccountId = accountId || 'default';
+  const organizations = JSON.parse(localStorage.getItem(`${defaultAccountId}:organizations`) || '[]') as Organization[];
   const organization = organizations.find(o => o.id === organizationId);
 
   if (!organization) {
-    throw redirect(href('/organization'));
+    // Don't redirect - allow access without organization
+    // throw redirect(href('/organization'));
   }
 
-  try {
-    const featuresResponse = insomniaFetch<{ features: FeatureList; billing: Billing } | undefined>({
-      method: 'GET',
-      path: `/v1/organizations/${organizationId}/features`,
-      sessionId,
-    });
+  // Always return enabled features - all features available for free
+  return {
+    featuresPromise: Promise.resolve(fallbackFeatures),
+    billingPromise: Promise.resolve(fallbackBilling),
+  };
 
-    return {
-      featuresPromise: featuresResponse.then(res => res?.features || fallbackFeatures),
-      billingPromise: featuresResponse.then(res => res?.billing || fallbackBilling),
-    };
-  } catch {
-    return {
-      featuresPromise: Promise.resolve(fallbackFeatures),
-      billingPromise: Promise.resolve(fallbackBilling),
-    };
-  }
+  // Original code commented out - always return enabled features
+  // try {
+  //   const featuresResponse = insomniaFetch<{ features: FeatureList; billing: Billing } | undefined>({
+  //     method: 'GET',
+  //     path: `/v1/organizations/${organizationId}/features`,
+  //     sessionId,
+  //   });
+
+  //   return {
+  //     featuresPromise: featuresResponse.then(res => res?.features || fallbackFeatures),
+  //     billingPromise: featuresResponse.then(res => res?.billing || fallbackBilling),
+  //   };
+  // } catch {
+  //   return {
+  //     featuresPromise: Promise.resolve(fallbackFeatures),
+  //     billingPromise: Promise.resolve(fallbackBilling),
+  //   };
+  // }
 }
 
 export function shouldRevalidate(args: ShouldRevalidateFunctionArgs) {

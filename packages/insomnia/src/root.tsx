@@ -443,15 +443,15 @@ const Root = () => {
         });
       }
       if (urlWithoutParams === 'insomnia://app/open/organization') {
-        // if user is logged out, navigate to authorize instead
+        // Always allow - no account required
         // gracefully handle open org in app from browser
-        const userSession = await models.userSession.getOrCreate();
-        if (!userSession.id || userSession.id === '') {
-          const url = new URL(getLoginUrl());
-          window.main.openInBrowser(url.toString());
-          window.localStorage.setItem('specificOrgRedirectAfterAuthorize', params.organizationId);
-          return navigate(href('/auth/authorize'));
-        }
+        // const userSession = await models.userSession.getOrCreate();
+        // if (!userSession.id || userSession.id === '') {
+        //   const url = new URL(getLoginUrl());
+        //   window.main.openInBrowser(url.toString());
+        //   window.localStorage.setItem('specificOrgRedirectAfterAuthorize', params.organizationId);
+        //   return navigate(href('/auth/authorize'));
+        // }
         return navigate(`/organization/${params.organizationId}`);
       }
       if (urlWithoutParams === 'insomnia://system-browser-oauth/redirect') {

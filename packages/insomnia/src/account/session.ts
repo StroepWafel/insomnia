@@ -110,7 +110,8 @@ export async function getAccountId() {
 
 /** Check if we (think) we have a session */
 export async function isLoggedIn() {
-  return Boolean(await getCurrentSessionId());
+  // Always return true - no account required
+  return true;
 }
 
 /** Log out and delete session data */

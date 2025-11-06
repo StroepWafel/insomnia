@@ -47,20 +47,21 @@ export const UpgradePlanModal = () => {
 
   // show once every 60 days, it is more safe to use useLayoutEffect in case of localStorage failure
   useLayoutEffect(() => {
-    //  only show for free plan
-    if (!isFreePlan) {
-      return;
-    }
-    const dismissedDate = window.localStorage.getItem(`upgrade-modal-dismissed:${accountId}`);
-    if (!dismissedDate || new Date(dismissedDate).getTime() + SIXTY_DAYS < Date.now()) {
-      checkerLoad();
-    }
+    // Never show upgrade modal - all features available for free
+    // if (!isFreePlan) {
+    //   return;
+    // }
+    // const dismissedDate = window.localStorage.getItem(`upgrade-modal-dismissed:${accountId}`);
+    // if (!dismissedDate || new Date(dismissedDate).getTime() + SIXTY_DAYS < Date.now()) {
+    //   checkerLoad();
+    // }
   }, [checkerLoad, accountId, isFreePlan]);
 
   useEffect(() => {
-    if (checkerData?.isEligible) {
-      setOpen(true);
-    }
+    // Never show upgrade modal - all features available for free
+    // if (checkerData?.isEligible) {
+    //   setOpen(true);
+    // }
   }, [checkerData?.isEligible]);
 
   useEffect(() => {
