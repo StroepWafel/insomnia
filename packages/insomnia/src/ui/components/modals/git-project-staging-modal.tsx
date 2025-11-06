@@ -931,7 +931,7 @@ export const GitProjectStagingModal: FC<{
                   </div>
                 )}
                 <div className="grid h-full grid-cols-[300px_1fr] gap-2 divide-x divide-solid divide-(--hl-md) overflow-hidden">
-                  <div className="flex flex-1 flex-col gap-4 overflow-hidden">
+                  <div className="flex flex-1 flex-col gap-4 overflow-hidden p-2">
                     {isGenerateCommitMessagesWithAIEnabled && (
                       <div className="flex flex-col gap-3 rounded-sm border border-solid border-(--hl-md) p-3">
                         <h3 className="font-semibold">
@@ -1005,7 +1005,7 @@ export const GitProjectStagingModal: FC<{
                     )}
                   </div>
                   {previewDiffItem?.diff ? (
-                    <div className="flex h-full flex-col gap-2 overflow-y-auto p-2 pb-0">
+                    <div className="flex h-full flex-col gap-2 overflow-y-auto pb-0">
                       <Heading className="flex items-center gap-2 font-bold">
                         <Icon icon="code-compare" />
                         {previewDiffItem.name}

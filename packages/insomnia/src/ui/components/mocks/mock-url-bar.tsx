@@ -51,7 +51,7 @@ export const MockUrlBar = ({ onSend }: { onSend: (path: string) => void }) => {
       <div className="shrink-0 rounded-xs bg-(--hl-xs) px-3 py-1">
         <span className={`http-method-${mockRoute.method} text-sm font-medium`}>{mockRoute.method}</span>
       </div>
-      <div className="flex flex-1 items-center rounded-xs border border-(--hl-sm) bg-(--color-bg) px-3 py-1">
+      <div className="flex flex-1 items-center rounded-xs bg-(--color-bg) px-3 py-1">
         <span className="flex-1 font-mono text-sm text-(--color-font)">{pathInput}</span>
       </div>
 
