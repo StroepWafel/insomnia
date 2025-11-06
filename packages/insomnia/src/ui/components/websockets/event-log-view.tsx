@@ -81,8 +81,8 @@ const getMessage = (event: EventTypes, isLoading: boolean): string | JSX.Element
       if (isSocketIOEvent(event)) {
         return (
           <div className="flex items-center">
-            <span className="bg-success mr-2 rounded-sm px-2 py-1">{event.eventName}</span>
-            <span className="flex-shrink">{event?.data?.[0]?.toString()}</span>
+            <span className="bg-success mr-2 rounded-xs px-2 py-1">{event.eventName}</span>
+            <span className="shrink">{event?.data?.[0]?.toString()}</span>
             {event?.data?.length > 1 && (
               <span className="bg-info ml-2 rounded-md px-2 py-1">
                 +{event.data.length - 1} {event.data.length - 1 > 1 ? 'Args' : 'Arg'}
@@ -97,8 +97,8 @@ const getMessage = (event: EventTypes, isLoading: boolean): string | JSX.Element
         return (
           <div className="flex items-center">
             {isLoading && <Icon className="mr-2 animate-spin" icon="spinner" />}
-            {isUnsupportedMethod && <span className="bg-warning mr-2 rounded-sm px-2 py-1">Unsupported</span>}
-            <span className="flex-shrink">{eventMethod.replace(`${unsupportedMethodPrefix}`, '')}</span>
+            {isUnsupportedMethod && <span className="bg-warning mr-2 rounded-xs px-2 py-1">Unsupported</span>}
+            <span className="shrink">{eventMethod.replace(`${unsupportedMethodPrefix}`, '')}</span>
           </div>
         );
       }
@@ -174,7 +174,7 @@ export const EventLogView: FC<Props> = ({
 
   return (
     <>
-      <div className="max-h-96 w-full flex-1 select-none overflow-hidden overflow-y-auto border border-solid border-[--hl-sm]">
+      <div className="max-h-96 w-full flex-1 overflow-hidden overflow-y-auto border border-solid border-(--hl-sm) select-none">
         <Table
           selectionMode="single"
           selectedKeys={selectionId ? [selectionId] : []}
@@ -193,17 +193,17 @@ export const EventLogView: FC<Props> = ({
           aria-label="Modified objects"
           className="w-full border-separate border-spacing-0"
         >
-          <TableHeader className="sticky top-0 z-10 bg-[--hl-xs] backdrop-blur backdrop-filter">
-            <Column isRowHeader className="p-3 text-left text-xs font-semibold focus:outline-none">
+          <TableHeader className="sticky top-0 z-10 bg-(--hl-xs) backdrop-blur-sm backdrop-filter">
+            <Column isRowHeader className="p-3 text-left text-xs font-semibold focus:outline-hidden">
               <span />
             </Column>
-            <Column className="p-3 text-left text-xs font-semibold focus:outline-none">Data</Column>
-            <Column className="p-3 text-left text-xs font-semibold focus:outline-none">Time</Column>
+            <Column className="p-3 text-left text-xs font-semibold focus:outline-hidden">Data</Column>
+            <Column className="p-3 text-left text-xs font-semibold focus:outline-hidden">Time</Column>
           </TableHeader>
           <TableBody
             style={{ height: virtualizer.getTotalSize() }}
             ref={parentRef}
-            className="divide divide-solid divide-[--hl-sm]"
+            className="divide divide-solid divide-(--hl-sm)"
             items={virtualizer.getVirtualItems()}
           >
             {item => {
@@ -213,8 +213,8 @@ export const EventLogView: FC<Props> = ({
               // add focus style when autoSelectLatestEvent is true for the first row
               const rowExtraClasses =
                 isSelectedRow && autoSelectLatestEvent
-                  ? 'bg-[--hl-sm] outline-none'
-                  : 'focus-within:bg-[--hl-sm] focus:outline-none';
+                  ? 'bg-(--hl-sm) outline-hidden'
+                  : 'focus-within:bg-(--hl-sm) focus:outline-hidden';
               if (isMcpEvents && event.type === 'message' && readyState) {
                 // Adding loading indicator if the message has not been responded by the server from json-rpc id
                 const { direction, data } = event;
@@ -245,13 +245,13 @@ export const EventLogView: FC<Props> = ({
               }
               return (
                 <Row className={`group transition-colors ${rowExtraClasses}`}>
-                  <Cell className="whitespace-nowrap border-b border-solid border-[--hl-sm] p-2 text-sm font-medium focus:outline-none group-last-of-type:border-none">
+                  <Cell className="border-b border-solid border-(--hl-sm) p-2 text-sm font-medium whitespace-nowrap group-last-of-type:border-none focus:outline-hidden">
                     <SvgIcon icon={getIcon(event)} />
                   </Cell>
-                  <Cell className="whitespace-nowrap border-b border-solid border-[--hl-sm] text-sm font-medium focus:outline-none group-last-of-type:border-none">
+                  <Cell className="border-b border-solid border-(--hl-sm) text-sm font-medium whitespace-nowrap group-last-of-type:border-none focus:outline-hidden">
                     {getMessage(event, isLoading)}
                   </Cell>
-                  <Cell className="whitespace-nowrap border-b border-solid border-[--hl-sm] text-sm font-medium focus:outline-none group-last-of-type:border-none">
+                  <Cell className="border-b border-solid border-(--hl-sm) text-sm font-medium whitespace-nowrap group-last-of-type:border-none focus:outline-hidden">
                     <Timestamp time={event.timestamp} />
                   </Cell>
                 </Row>
